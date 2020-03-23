@@ -1,8 +1,10 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 17:22.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 18:47.
 from django.contrib.auth import get_user_model
 from rest_framework import generics, authentication, permissions, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.generics import get_object_or_404
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
@@ -66,6 +68,7 @@ class UserFollowersView(generics.ListAPIView):
     """Lists all followers a user has"""
 
     serializer_class = UserSerializer
+    pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
         return get_user_model().objects.get(username=self.kwargs['username']).followed_by
@@ -75,6 +78,7 @@ class UserFollowingsView(generics.ListAPIView):
     """Lists all followings a user has"""
 
     serializer_class = UserSerializer
+    pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
         return get_user_model().objects.get(username=self.kwargs['username']).follows
@@ -88,7 +92,7 @@ class FollowView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get_object(self, username):
-        return self.queryset.get(username=username)
+        return get_object_or_404(self.queryset, username=username)
 
     def post(self, request, username):
         user_follwed = self.get_object(username)

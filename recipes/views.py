@@ -1,10 +1,11 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 17:22.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 18:47.
 
 from itertools import chain
 
+from django.http import Http404
 from rest_framework import mixins, status
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, get_object_or_404
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
@@ -12,9 +13,9 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from django.utils.translation import gettext_lazy as _
 
-from recipes.models import RecipeModel
-from recipes.permission import IsOwnerOrReadOnly
-from recipes.serializers import RecipeSerializer, DetailedRecipeSerializer
+from recipes.models import RecipeModel, TagModel, RecipeImageModel
+from recipes.permission import IsOwner
+from recipes.serializers import RecipeSerializer, DetailedRecipeSerializer, RecipeImageField
 
 
 class RecipesFeedView(ListAPIView):
@@ -45,7 +46,7 @@ class RecipesView(mixins.CreateModelMixin,
     serializer_class = DetailedRecipeSerializer
     queryset = RecipeModel.objects.all()
     authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwner)
 
     def get_serializer_context(self):
         return {'user': self.request.user}
@@ -75,3 +76,41 @@ class FavouriteView(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(_("The selected recipe is not in your favourites list."),
                         status=status.HTTP_400_BAD_REQUEST)
+
+
+class TagFeedView(ListAPIView):
+    """Lists all recipes with a certain tag"""
+
+    serializer_class = RecipeSerializer
+    pagination_class = LimitOffsetPagination
+
+    def get_queryset(self):
+        tag = get_object_or_404(TagModel, tag=self.kwargs['name'])
+        return RecipeModel.objects.filter(tags__in=tag)
+
+
+class RecipeImageView(mixins.CreateModelMixin,
+                      mixins.DestroyModelMixin,
+                      GenericViewSet):
+    """Add or deletes an image from a recipe"""
+
+    lookup_field = 'number'
+    serializer_class = RecipeImageField
+    queryset = RecipeImageModel.objects.all()
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated, IsOwner)
+
+    def get_object(self):
+        recipe = get_object_or_404(RecipeModel, slug=self.kwargs['slug'])
+        if self.action == 'create':
+            return recipe
+        if self.action == 'destroy':
+            number = self.kwargs['number']
+            if number > recipe.images.count():
+                raise Http404
+            return recipe.images[self.kwargs['number']]
+
+    def perform_create(self, serializer):
+        image = serializer.to_internal_value()
+        image.recipe = self.get_object()
+        image.save()

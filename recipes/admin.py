@@ -1,6 +1,8 @@
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 18:47.
+
 from django.contrib import admin
 
-from recipes.models import ImageModel, IngredientModel, TagModel, RecipeModel
+from recipes.models import RecipeImageModel, IngredientModel, TagModel, RecipeModel
 
 
 class RecipeModelAdmin(admin.ModelAdmin):
@@ -26,4 +28,4 @@ class ImageModelAdmin(admin.ModelAdmin):
 admin.site.register(RecipeModel, RecipeModelAdmin)
 admin.site.register(TagModel, TagModelAdmin)
 admin.site.register(IngredientModel, IngredientModelAdmin)
-admin.site.register(ImageModel, ImageModelAdmin)
+admin.site.register(RecipeImageModel, ImageModelAdmin)

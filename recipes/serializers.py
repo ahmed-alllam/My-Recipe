@@ -1,8 +1,8 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 13:54.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 18:47.
 from rest_framework import serializers
 from rest_framework.fields import ImageField
 
-from recipes.models import TagModel, RecipeModel, IngredientModel, ImageModel
+from recipes.models import TagModel, RecipeModel, IngredientModel, RecipeImageModel
 from users.serializers import UserSerializer
 
 
@@ -33,7 +33,7 @@ class RecipeImageField(serializers.Field):
 
     def to_internal_value(self, data):
         image_field = ImageField().to_internal_value(data)
-        image = ImageModel(image=image_field)
+        image = RecipeImageModel(image=image_field)
         return image
 
     def to_representation(self, value):

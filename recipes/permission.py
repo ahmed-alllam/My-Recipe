@@ -1,8 +1,8 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 13:54.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 18:47.
 from rest_framework import permissions
 
 
-class IsOwnerOrReadOnly(permissions.BasePermission):
+class IsOwner(permissions.BasePermission):
     """
     Custom permission to only allow owners of an object to edit it.
     """

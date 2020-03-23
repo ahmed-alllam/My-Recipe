@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 13:54.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 18:47.
 
 import uuid
 
@@ -54,17 +54,16 @@ class TagModel(models.Model):
 class IngredientModel(models.Model):
     """Model for Recipe Ingredients"""
     name = models.CharField(max_length=100)
-    slug = models.SlugField(db_index=True, max_length=255, unique=True)
     recipe = models.ForeignKey(to=RecipeModel, on_delete=models.CASCADE, related_name='ingredients')
 
-    # todo : add unique together
+    class Meta:
+        unique_together = ('recipe', 'name')  # to prevent having duplicate ingredients in one recipe
 
     def __str__(self):
         return self.name
 
 
-class ImageModel(models.Model):
-    """An alias to imagefield to enable a recipe to have many images"""
+class RecipeImageModel(models.Model):
+    """An alias to image field to enable a recipe to have many images"""
     image = models.ImageField(upload_to=image_upload)
-    slug = models.SlugField(db_index=True, max_length=255, unique=True)
     recipe = models.ForeignKey(to=RecipeModel, on_delete=models.CASCADE, related_name='images')
