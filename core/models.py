@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 13:54.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 17:22.
 import uuid
 
 from django.db import models
@@ -85,11 +85,11 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def is_following(self, user):
         """Returns True if we're following `user`; False otherwise."""
-        return self.follows.filter(pk=user.pk).exists()
+        return self.follows.filter(username=user.username).exists()
 
     def is_followed_by(self, user):
         """Returns True if `user` is following us; False otherwise."""
-        return self.followed_by.filter(pk=user.pk).exists()
+        return self.followed_by.filter(username=user.username).exists()
 
     def favorite(self, recipe):
         """Favorite `recipe` if we haven't already favorited it."""
@@ -101,4 +101,4 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def has_favorited(self, recipe):
         """Returns True if we have favorited `recipe`; else False."""
-        return self.favorites.filter(pk=recipe.pk).exists()
+        return self.favorites.filter(slug=recipe.slug).exists()

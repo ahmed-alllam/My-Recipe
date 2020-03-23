@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 13:54.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 17:22.
 
 from itertools import chain
 
@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
+from django.utils.translation import gettext_lazy as _
 
 from recipes.models import RecipeModel
 from recipes.permission import IsOwnerOrReadOnly
@@ -72,5 +73,5 @@ class FavouriteView(APIView):
         if user.has_favorited(recipe):
             user.unfavorite(recipe)
             return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response("The selected recipe is not in your favourites list in the first place.",
+        return Response(_("The selected recipe is not in your favourites list."),
                         status=status.HTTP_400_BAD_REQUEST)
