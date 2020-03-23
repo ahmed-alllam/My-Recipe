@@ -1,6 +1,5 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 18:47.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 21:18.
 from rest_framework import serializers
-from rest_framework.fields import ImageField
 
 from recipes.models import TagModel, RecipeModel, IngredientModel, RecipeImageModel
 from users.serializers import UserSerializer
@@ -28,16 +27,24 @@ class IngredientsField(serializers.Field):
         return value.name
 
 
-class RecipeImageField(serializers.Field):
+class RecipeImageField(serializers.ImageField):  # used for nested serializers
     """Field for recipe images"""
 
     def to_internal_value(self, data):
-        image_field = ImageField().to_internal_value(data)
+        image_field = super().to_internal_value(data)
         image = RecipeImageModel(image=image_field)
         return image
 
     def to_representation(self, value):
         return value.image.url
+
+
+class RecipeImageSerializer(serializers.ModelSerializer):  # used for views
+    """Serializer for recipe images"""
+
+    class Meta:
+        model = RecipeImageModel
+        fields = ('image',)
 
 
 class DetailedRecipeSerializer(serializers.ModelSerializer):

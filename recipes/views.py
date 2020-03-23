@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 18:47.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 21:18.
 
 from itertools import chain
 
@@ -15,7 +15,7 @@ from django.utils.translation import gettext_lazy as _
 
 from recipes.models import RecipeModel, TagModel, RecipeImageModel
 from recipes.permission import IsOwner
-from recipes.serializers import RecipeSerializer, DetailedRecipeSerializer, RecipeImageField
+from recipes.serializers import RecipeSerializer, DetailedRecipeSerializer, RecipeImageSerializer
 
 
 class RecipesFeedView(ListAPIView):
@@ -86,7 +86,7 @@ class TagFeedView(ListAPIView):
 
     def get_queryset(self):
         tag = get_object_or_404(TagModel, tag=self.kwargs['name'])
-        return RecipeModel.objects.filter(tags__in=tag)
+        return tag.recipes.all()
 
 
 class RecipeImageView(mixins.CreateModelMixin,
@@ -95,7 +95,7 @@ class RecipeImageView(mixins.CreateModelMixin,
     """Add or deletes an image from a recipe"""
 
     lookup_field = 'number'
-    serializer_class = RecipeImageField
+    serializer_class = RecipeImageSerializer
     queryset = RecipeImageModel.objects.all()
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated, IsOwner)
@@ -105,12 +105,12 @@ class RecipeImageView(mixins.CreateModelMixin,
         if self.action == 'create':
             return recipe
         if self.action == 'destroy':
-            number = self.kwargs['number']
-            if number > recipe.images.count():
+            number = int(self.kwargs['number']) - 1
+            print(recipe.images.count())
+            print(number)
+            if number >= recipe.images.count() or number < 0:  # bugs
                 raise Http404
-            return recipe.images[self.kwargs['number']]
+            return recipe.images.all()[number]
 
     def perform_create(self, serializer):
-        image = serializer.to_internal_value()
-        image.recipe = self.get_object()
-        image.save()
+        serializer.save(recipe=self.get_object())
