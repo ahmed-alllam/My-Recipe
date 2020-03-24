@@ -1,8 +1,9 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 21:18.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 24/03/2020, 14:36.
 
 from itertools import chain
 
 from django.http import Http404
+from django.utils.translation import gettext_lazy as _
 from rest_framework import mixins, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.generics import ListAPIView, get_object_or_404
@@ -11,11 +12,11 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
-from django.utils.translation import gettext_lazy as _
 
-from recipes.models import RecipeModel, TagModel, RecipeImageModel
+from recipes.models import RecipeModel, TagModel, RecipeImageModel, RecipeReviewModel
 from recipes.permission import IsOwner
-from recipes.serializers import RecipeSerializer, DetailedRecipeSerializer, RecipeImageSerializer
+from recipes.serializers import RecipeSerializer, DetailedRecipeSerializer, RecipeImageSerializer, \
+    RecipeReviewsSerializer
 
 
 class RecipesFeedView(ListAPIView):
@@ -92,7 +93,7 @@ class TagFeedView(ListAPIView):
 class RecipeImageView(mixins.CreateModelMixin,
                       mixins.DestroyModelMixin,
                       GenericViewSet):
-    """Add or deletes an image from a recipe"""
+    """Adds or deletes an image from a recipe"""
 
     lookup_field = 'number'
     serializer_class = RecipeImageSerializer
@@ -106,11 +107,31 @@ class RecipeImageView(mixins.CreateModelMixin,
             return recipe
         if self.action == 'destroy':
             number = int(self.kwargs['number']) - 1
-            print(recipe.images.count())
-            print(number)
-            if number >= recipe.images.count() or number < 0:  # bugs
+            if number >= recipe.images.count() or number < 0:
                 raise Http404
             return recipe.images.all()[number]
 
     def perform_create(self, serializer):
         serializer.save(recipe=self.get_object())
+
+
+class RecipeReviewView(mixins.CreateModelMixin,
+                       mixins.DestroyModelMixin,
+                       GenericViewSet):
+    """Adds or Deletes a Recipe Review"""
+
+    lookup_field = 'slug'
+    serializer_class = RecipeReviewsSerializer
+    queryset = RecipeReviewModel.objects.all()
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated, IsOwner)
+
+    def get_object(self):
+        if self.action == 'create':
+            return get_object_or_404(RecipeModel, slug=self.kwargs['recipe_slug'])
+        if self.action == 'destroy':
+            return get_object_or_404(RecipeReviewModel, recipe__slug=self.kwargs['recipe_slug'],
+                                     slug=self.kwargs['slug'])
+
+    def perform_create(self, serializer):
+        serializer.save(recipe=self.get_object(), user=self.request.user)

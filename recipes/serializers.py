@@ -1,7 +1,7 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 21:18.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 24/03/2020, 14:36.
 from rest_framework import serializers
 
-from recipes.models import TagModel, RecipeModel, IngredientModel, RecipeImageModel
+from recipes.models import TagModel, RecipeModel, IngredientModel, RecipeImageModel, RecipeReviewModel
 from users.serializers import UserSerializer
 
 
@@ -47,6 +47,21 @@ class RecipeImageSerializer(serializers.ModelSerializer):  # used for views
         fields = ('image',)
 
 
+class RecipeReviewsSerializer(serializers.ModelSerializer):
+    """Serializer for recipe reviews"""
+
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = RecipeReviewModel
+        fields = ('user', 'title', 'slug', 'rating', 'timestamp', 'body')
+        extra_kwargs = {
+            'slug': {
+                'read_only': True
+            }
+        }
+
+
 class DetailedRecipeSerializer(serializers.ModelSerializer):
     """Detailed Serializer for recipe model"""
 
@@ -54,12 +69,16 @@ class DetailedRecipeSerializer(serializers.ModelSerializer):
     tags = serializers.ListSerializer(child=TagField(), required=False)
     ingredients = serializers.ListSerializer(child=IngredientsField())
     images = serializers.ListSerializer(child=RecipeImageField(), required=False)
+    reviews = RecipeReviewsSerializer(many=True, read_only=True)
     favourites_count = serializers.ReadOnlyField()
+    reviews_count = serializers.ReadOnlyField()
+    rating = serializers.ReadOnlyField()
 
     class Meta:
         model = RecipeModel
-        fields = ('user', 'name', 'main_image', 'time_to_finish', 'ingredients', 'description',
-                  'body', 'images', 'tags', 'timestamp', 'favourites_count')
+        fields = ('user', 'name', 'main_image', 'time_to_finish', 'rating', 'ingredients',
+                  'description', 'body', 'images', 'tags', 'timestamp', 'favourites_count',
+                  'reviews', 'reviews_count')
 
     def create(self, validated_data):
         user = self.context.get('user', None)

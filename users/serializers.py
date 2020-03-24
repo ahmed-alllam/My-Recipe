@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 13:54.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 24/03/2020, 14:36.
 
 from django.contrib.auth import get_user_model, authenticate
 from django.utils.translation import ugettext_lazy as _
@@ -12,9 +12,14 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
         fields = ('username', 'email', 'password', 'name', 'bio', 'image')
-        extra_kwargs = {'password': {'write_only': True,
-                                     'min_length': 5},
-                        'username': {'read_only': True}}
+        extra_kwargs = {
+            'password': {
+                'write_only': True, 'min_length': 5
+            },
+            'username': {
+                'read_only': True
+            }
+        }
 
     def create(self, validated_data):
         """Create a new user with encrypted password and return it"""
@@ -45,7 +50,9 @@ class AuthTokenSerializer(serializers.Serializer):
     """Serializer for the user authentication object"""
     email = serializers.CharField()
     password = serializers.CharField(
-        style={'input_type': 'password'},
+        style={
+            'input_type': 'password'
+        },
         trim_whitespace=False
     )
 

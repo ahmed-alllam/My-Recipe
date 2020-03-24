@@ -1,21 +1,15 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 18:47.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 24/03/2020, 14:36.
 
 import uuid
 
 from django.contrib.auth import get_user_model
+from django.core import validators
 from django.db import models
+from django.db.models import Avg
 
 
 def image_upload(instance, filename):
-    """Gives a unique path to the saved user photo in models.
-    Arguments:
-        instance: the model instance itself, it is not
-                  used in thisfunction but it's required by django.
-        filename: the name of the photo sent by user, it's
-                  used here to get the format of the photo.
-    Returns:
-        The unique path that the photo will be stored in the DB.
-    """
+    """Gives a unique path to the saved user photo in models"""
     return 'images/{0}{1}'.format(uuid.uuid4().hex, filename)
 
 
@@ -42,6 +36,16 @@ class RecipeModel(models.Model):
         """gets the favourites count for that recipes"""
         return self.favorited_by.count()
 
+    @property
+    def reviews_count(self):
+        """gets the reviews count for that recipes"""
+        return self.reviews.count()
+
+    @property
+    def rating(self):
+        """gets the rating of that recipe from its reviews"""
+        return self.reviews.all().aggregate(Avg('rating')).get('rating__avg', '')
+
 
 class TagModel(models.Model):
     """Model for Recipe tags"""
@@ -67,3 +71,24 @@ class RecipeImageModel(models.Model):
     """An alias to image field to enable a recipe to have many images"""
     image = models.ImageField(upload_to=image_upload)
     recipe = models.ForeignKey(to=RecipeModel, on_delete=models.CASCADE, related_name='images')
+
+
+class RecipeReviewModel(models.Model):
+    """Model for Recipe Reviews"""
+    user = models.ForeignKey(to=get_user_model(), on_delete=models.SET_NULL, null=True)
+    recipe = models.ForeignKey(to=RecipeModel, on_delete=models.CASCADE, related_name='comments')
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(db_index=True, max_length=255)
+    rating = models.PositiveIntegerField(validators=[
+        validators.MaxValueValidator(5),
+        validators.MinValueValidator(1),
+    ])
+    body = models.TextField()
+    timestamp = models.DateTimeField()  # time of commenting
+
+    class Meta:
+        unique_together = ('recipe', 'slug')
+        ordering = ('-timestamp',)
+
+    def __str__(self):
+        return self.title

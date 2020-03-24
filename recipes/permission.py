@@ -1,5 +1,7 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 21:18.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 24/03/2020, 14:36.
 from rest_framework import permissions
+
+from recipes.models import RecipeModel, RecipeImageModel, RecipeReviewModel
 
 
 class IsOwner(permissions.BasePermission):
@@ -10,6 +12,9 @@ class IsOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        if hasattr(obj, 'user'):
+
+        if type(obj) == RecipeModel or type(obj) == RecipeReviewModel:
             return obj.user == request.user
-        return obj.recipe.user == request.user
+        elif type(obj) == RecipeImageModel:
+            return obj.recipe.user == request.user
+        return False

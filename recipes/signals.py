@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 18:47.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 24/03/2020, 14:36.
 import re
 
 from django.db.models.signals import pre_save
@@ -46,3 +46,11 @@ def add_slug_to_recipe(instance, **kwargs):
     to give it a unique slug"""
 
     instance.slug = unique_slugify(instance, instance.name)
+
+
+@receiver(pre_save, sender=RecipeModel)
+def add_slug_to_reviews(instance, **kwargs):
+    """The receiver called before a recipe review is saved
+    to give it a unique slug"""
+
+    instance.slug = unique_slugify(instance, instance.title)

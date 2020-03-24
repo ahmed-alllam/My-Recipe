@@ -1,6 +1,7 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 23/03/2020, 18:47.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 24/03/2020, 14:36.
 from django.contrib.auth import get_user_model
-from rest_framework import generics, authentication, permissions, status
+from django.utils.translation import gettext_lazy as _
+from rest_framework import generics, authentication, permissions, status, serializers
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.generics import get_object_or_404
@@ -9,7 +10,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.views import APIView
-from django.utils.translation import gettext_lazy as _
 
 from recipes.models import RecipeModel
 from recipes.serializers import RecipeSerializer
@@ -97,6 +97,10 @@ class FollowView(APIView):
     def post(self, request, username):
         user_follwed = self.get_object(username)
         user_follower = request.user
+
+        if user_follower.username == user_follwed.username:
+            raise serializers.ValidationError(_('You can not follow yourself.'))
+
         user_follower.follow(user_follwed)
         return Response(status=status.HTTP_201_CREATED)
 
