@@ -1,11 +1,11 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 24/03/2020, 14:36.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 24/03/2020, 14:45.
 import re
 
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils.text import slugify
 
-from recipes.models import RecipeModel
+from recipes.models import RecipeModel, RecipeReviewModel
 
 
 def _slug_strip(value):
@@ -48,7 +48,7 @@ def add_slug_to_recipe(instance, **kwargs):
     instance.slug = unique_slugify(instance, instance.name)
 
 
-@receiver(pre_save, sender=RecipeModel)
+@receiver(pre_save, sender=RecipeReviewModel)
 def add_slug_to_reviews(instance, **kwargs):
     """The receiver called before a recipe review is saved
     to give it a unique slug"""
