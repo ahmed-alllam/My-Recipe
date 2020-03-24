@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 24/03/2020, 14:36.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 24/03/2020, 14:43.
 
 import uuid
 
@@ -23,7 +23,7 @@ class RecipeModel(models.Model):
     body = models.TextField()
     main_image = models.ImageField(upload_to=image_upload, null=True)
     time_to_finish = models.PositiveIntegerField()
-    timestamp = models.DateTimeField()  # time of publishing
+    timestamp = models.DateTimeField(auto_now_add=True)  # time of publishing
 
     class Meta:
         ordering = ('-timestamp',)
@@ -84,7 +84,7 @@ class RecipeReviewModel(models.Model):
         validators.MinValueValidator(1),
     ])
     body = models.TextField()
-    timestamp = models.DateTimeField()  # time of commenting
+    timestamp = models.DateTimeField(auto_now_add=True)  # time of commenting
 
     class Meta:
         unique_together = ('recipe', 'slug')
